@@ -8,7 +8,7 @@ and making sure approvals go smoothly between the Admin, Principal, Warden, and 
 
 Backend (Server Side)
 🔹 Python
-Main language of your project
+Main language of this project
 Handles:
 Login & registration
 Role management (Admin, Principal, Warden, Student)
