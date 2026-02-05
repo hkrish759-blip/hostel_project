@@ -18,6 +18,7 @@ CREATE TABLE users (
     college TEXT,
     approved INTEGER DEFAULT 0,
 
+    room_id INTEGER,
     id_card TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -47,16 +48,14 @@ CREATE TABLE rooms (
     hostel_id INTEGER NOT NULL,
     room_number TEXT NOT NULL,
 
-    is_allocated INTEGER DEFAULT 0,
-    student_id INTEGER,
+    capacity INTEGER DEFAULT 3,
+    occupied INTEGER DEFAULT 0,
+    facilities TEXT DEFAULT 'Bed, Table, Fan',
+    damage TEXT DEFAULT 'None',
 
     FOREIGN KEY (hostel_id)
         REFERENCES hostels(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (student_id)
-        REFERENCES users(id)
-        ON DELETE SET NULL
+        ON DELETE CASCADE
 );
 
 -- =========================
@@ -67,6 +66,7 @@ CREATE TABLE applications (
 
     student_id INTEGER NOT NULL,
     hostel_id INTEGER NOT NULL,
+    room_id INTEGER,
 
     status TEXT CHECK (
         status IN ('pending','approved','rejected')
@@ -76,6 +76,10 @@ CREATE TABLE applications (
 
     FOREIGN KEY (student_id)
         REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (room_id)
+        REFERENCES rooms(id)
         ON DELETE CASCADE,
 
     FOREIGN KEY (hostel_id)

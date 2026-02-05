@@ -107,7 +107,7 @@ def register(role):
         flash("Registered successfully. Wait for principal approval.")
         return redirect("/")
 
-    return render_template(f"{role}_register.html", role=role)
+    return render_template("register.html", role=role)
 
 # ----------------for debug ----------------
 @app.route("/debug_users")
@@ -129,8 +129,18 @@ def admin():
     principals = db.execute("""
         SELECT * FROM users WHERE role='principal' AND approved=0
     """).fetchall()
+
+    approved_principals = db.execute("""
+        SELECT * FROM users WHERE role='principal' AND approved=1
+    """).fetchall()
+
+    college_count = db.execute("""
+        SELECT COUNT(DISTINCT college) FROM users WHERE role='principal' AND approved=1
+    """).fetchone()[0]
+
     db.close()
-    return render_template("admin_dashboard.html", principals=principals)
+    return render_template("admin_dashboard.html", principals=principals,
+                           approved_principals=approved_principals, college_count=college_count)
 
 @app.route("/admin/approve/<int:uid>")
 def admin_approve(uid):
@@ -159,12 +169,19 @@ def principal():
     AND approved=0
 """).fetchall()
 
+    # Count total approved students in this college
+    student_count = db.execute("""
+        SELECT COUNT(*) FROM users 
+        WHERE role='student' AND college=? AND approved=1
+    """, (session["college"],)).fetchone()[0]
+
     # Pending hostel applications (students only)
     applications = db.execute("""
-        SELECT a.id, u.username, h.name, h.id AS hostel_id, u.id AS student_id
+        SELECT a.id, u.username, h.name, r.room_number, h.id AS hostel_id, u.id AS student_id
         FROM applications a
         JOIN users u ON a.student_id=u.id
         JOIN hostels h ON a.hostel_id=h.id
+        LEFT JOIN rooms r ON a.room_id=r.id
         WHERE a.status='pending'
         AND u.college=?
     """, (session["college"],)).fetchall()
@@ -172,7 +189,8 @@ def principal():
     db.close()
     return render_template("principal_dashboard.html",
                            students=pending_users,
-                           apps=applications)
+                           apps=applications,
+                           student_count=student_count)
 
 # ---------------- APPROVE STUDENT/WARDEN ----------------
 @app.route("/principal/approve_user/<int:uid>")
@@ -208,25 +226,38 @@ def principal_approve_hostel(aid):
 
     db = get_db()
     app_data = db.execute("""
-        SELECT student_id, hostel_id
+        SELECT student_id, hostel_id, room_id
         FROM applications
         WHERE id=?
     """, (aid,)).fetchone()
 
     if app_data:
-        # Allocate first available room
+        # 1. Try to allocate the specific room applied for
         room = db.execute("""
             SELECT id FROM rooms
-            WHERE hostel_id=? AND is_allocated=0
-            LIMIT 1
-        """, (app_data["hostel_id"],)).fetchone()
+            WHERE id=? AND occupied < capacity
+        """, (app_data["room_id"],)).fetchone()
+
+        # 2. If that room is full, fallback to any available room in the hostel
+        if not room:
+            room = db.execute("""
+                SELECT id FROM rooms
+                WHERE hostel_id=? AND occupied < capacity
+                LIMIT 1
+            """, (app_data["hostel_id"],)).fetchone()
 
         if room:
             db.execute("""
                 UPDATE rooms
-                SET is_allocated=1, student_id=?
+                SET occupied = occupied + 1
                 WHERE id=?
-            """, (app_data["student_id"], room["id"]))
+            """, (room["id"],))
+
+            db.execute("""
+                UPDATE users
+                SET room_id=?
+                WHERE id=?
+            """, (room["id"], app_data["student_id"]))
 
             db.execute("""
                 UPDATE hostels
@@ -256,11 +287,10 @@ def student():
 
     # Available rooms (not allocated)
     rooms = db.execute("""
-        SELECT r.id, r.room_number, h.name AS hostel_name
+        SELECT r.*, h.name AS hostel_name
         FROM rooms r
         JOIN hostels h ON r.hostel_id = h.id
-        WHERE r.is_allocated = 0
-        AND h.college = ?
+        WHERE h.college = ?
     """, (session["college"],)).fetchall()
 
     # Student attendance
@@ -282,10 +312,11 @@ def student():
 
     # Allocated room (if already approved)
     room = db.execute("""
-        SELECT r.room_number, h.name AS hostel_name
+        SELECT r.*, h.name AS hostel_name
         FROM rooms r
         JOIN hostels h ON r.hostel_id = h.id
-        WHERE r.student_id = ?
+        JOIN users u ON u.room_id = r.id
+        WHERE u.id = ?
     """, (session["uid"],)).fetchone()
 
     db.close()
@@ -312,9 +343,9 @@ def apply_room(room_id):
 
     if hostel:
         db.execute("""
-            INSERT INTO applications (student_id, hostel_id, status)
-            VALUES (?, ?, 'pending')
-        """, (session["uid"], hostel["hostel_id"]))
+            INSERT INTO applications (student_id, hostel_id, room_id, status)
+            VALUES (?, ?, ?, 'pending')
+        """, (session["uid"], hostel["hostel_id"], room_id))
 
     db.commit()
     db.close()
@@ -353,7 +384,7 @@ def warden():
 
     # Rooms of those hostels
     rooms = db.execute("""
-        SELECT r.id, r.room_number, h.name AS hostel_name
+        SELECT r.*, h.name AS hostel_name
         FROM rooms r
         JOIN hostels h ON r.hostel_id = h.id
         WHERE h.warden_id=?
@@ -417,6 +448,26 @@ def warden_add_hostel():
     flash("Hostel added successfully!")
     return redirect("/warden")
 
+# ---------------- UPDATE ROOM DETAILS ----------------
+@app.route("/warden/update_room", methods=["POST"])
+def warden_update_room():
+    if session.get("role") != "warden":
+        return redirect("/")
+
+    room_id = request.form["room_id"]
+    capacity = request.form["capacity"]
+    facilities = request.form["facilities"]
+    damage = request.form["damage"]
+
+    db = get_db()
+    db.execute("""
+        UPDATE rooms SET capacity=?, facilities=?, damage=? WHERE id=?
+    """, (capacity, facilities, damage, room_id))
+    db.commit()
+    db.close()
+
+    flash("Room details updated!")
+    return redirect("/warden")
 
 # ---------------- TAKE ATTENDANCE ----------------
 @app.route("/warden/attendance", methods=["POST"])

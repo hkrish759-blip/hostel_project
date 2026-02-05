@@ -4,41 +4,42 @@
     <title>{{ role.capitalize() }} Registration</title>
     <style>
         body {
-            font-family: Arial;
-            padding: 50px;
-            max-width: 420px;
-            margin: auto;
-            background: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
-        input, button {
+        form {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
+            max-width: 400px;
+        }
+        h2 { text-align: center; color: #333; margin-bottom: 25px; }
+        input, button {
+            width: 100%; padding: 12px; margin: 8px 0;
+            border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;
         }
         button {
-            background: #2196F3;
-            color: white;
-            border: none;
-            cursor: pointer;
+            background: #007bff; color: white; border: none; cursor: pointer;
+            font-size: 16px; font-weight: 600; margin-top: 15px;
         }
-        .flash {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-        }
+        button:hover { background: #0056b3; }
+        .flash { padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        p { text-align: center; margin-top: 20px; }
+        a { color: #007bff; text-decoration: none; }
+        label { font-weight: bold; display: block; margin-top: 10px; color: #555; }
     </style>
 </head>
 <body>
-
-<h2>{{ role.capitalize() }} Registration</h2>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -50,6 +51,8 @@
 
 <!-- IMPORTANT: enctype added for file upload -->
 <form method="POST" enctype="multipart/form-data">
+
+    <h2>{{ role.capitalize() }} Registration</h2>
 
     <input type="text" name="username" placeholder="Username" required>
 
@@ -69,11 +72,11 @@
     {% endif %}
 
     <button type="submit">Register</button>
+    
+    <p>
+        <a href="{{ url_for('login') }}">Back to Login</a>
+    </p>
 </form>
-
-<p>
-    <a href="{{ url_for('login') }}">Back to Login</a>
-</p>
 
 </body>
 </html>

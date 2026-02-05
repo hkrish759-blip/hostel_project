@@ -17,7 +17,8 @@
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
             padding: 25px;
             border-radius: 8px;
             width: 420px;
@@ -66,6 +67,7 @@
 <div class="container">
 
     <h2>Principal Dashboard ({{ session.college }})</h2>
+    <p style="text-align:center; font-weight:bold; color:#555;">Total Approved Students: {{ student_count }}</p>
 
     <hr>
 
@@ -101,8 +103,9 @@
 
     {% for a in apps %}
         <div class="box">
-            Student: {{ a.username }} <br>
-            Hostel: {{ a.name }} <br>
+            <b>Student:</b> {{ a.username }} <br>
+            <b>Hostel:</b> {{ a.name }} <br>
+            <b>Applied Room:</b> {{ a.room_number }} <br>
 
             <a href="/principal/approve_hostel/{{ a.id }}">
                 <button class="approve">Approve</button>

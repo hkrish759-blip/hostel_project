@@ -3,42 +3,76 @@
 <head>
     <title>Verify OTP</title>
     <style>
-        body { font-family: Arial; background: #f4f4f4; }
-        .box {
-            width: 350px;
-            margin: 100px auto;
-            padding: 20px;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef2f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
             background: white;
-            border-radius: 6px;
-            box-shadow: 0 0 10px #aaa;
-        }
-        input, button {
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
             width: 100%;
-            padding: 10px;
-            margin-top: 10px;
+            max-width: 380px;
+            text-align: center;
         }
-        .error { color: red; }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .flash {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .error { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>OTP Verification</h2>
-
+<div class="container">
+    <h2>Enter OTP</h2>
+    
     {% if error %}
-        <p class="error">{{ error }}</p>
+        <div class="flash error">{{ error }}</div>
     {% endif %}
 
     <form method="POST" action="/verify_otp">
-        <input type="text" name="otp"
-               placeholder="Enter 6-digit OTP" required>
-
-        <button type="submit">Verify OTP</button>
+        <input type="text" name="otp" placeholder="XXXXXX" required>
+        <button type="submit">Verify</button>
     </form>
-
-    <p style="font-size: 13px; margin-top: 10px;">
-        OTP is valid for 5 minutes.
-    </p>
 </div>
 
 </body>

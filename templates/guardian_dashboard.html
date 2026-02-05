@@ -1,3 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Guardian Dashboard</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            background: url("{{ url_for('static', filename='images/image.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            color: #333; 
+        }
+        .box { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(5px); 
+            padding: 25px; 
+            margin-bottom: 25px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        a { color: #dc3545; text-decoration: none; font-weight: bold; float: right; }
+    </style>
+</head>
+<body>
+
+<div class="box">
 <h2>Welcome Guardian</h2>
 <a href="/logout">Logout</a>
 
@@ -7,3 +36,7 @@
 {% else %}
 <p>No attendance records.</p>
 {% endfor %}
+</div>
+
+</body>
+</html>

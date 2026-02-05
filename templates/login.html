@@ -9,7 +9,7 @@
     <style>
         /* Full page background */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: url("{{ url_for('static', filename='images/image.png') }}") no-repeat center center fixed;
             background-size: cover;
             height: 100vh;
@@ -21,13 +21,14 @@
 
         /* Login box */
         .login-box {
-            background: rgba(255, 255, 255, 0.92);
-            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
             width: 100%;
-            max-width: 400px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            animation: slideUp 0.8s ease;
+            max-width: 380px;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
         }
 
         /* Animation */
@@ -45,6 +46,7 @@
         h2 {
             text-align: center;
             margin-bottom: 20px;
+            color: #333;
         }
 
         input, button {
@@ -52,20 +54,22 @@
             padding: 12px;
             margin: 10px 0;
             border-radius: 5px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             font-size: 15px;
+            box-sizing: border-box;
         }
 
         button {
-            background: #2196F3;
+            background: #007bff;
             color: white;
             border: none;
             cursor: pointer;
+            font-weight: 600;
             transition: background 0.3s;
         }
 
         button:hover {
-            background: #1976D2;
+            background: #0056b3;
         }
 
         .flash {
@@ -90,16 +94,43 @@
             text-align: center;
             margin-top: 15px;
             font-size: 14px;
+            color: #555;
+            line-height: 1.6;
         }
 
         a {
-            color: #2196F3;
+            color: #007bff;
             text-decoration: none;
             font-weight: bold;
         }
 
         a:hover {
             text-decoration: underline;
+        }
+
+        .register-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .register-btn {
+            display: block;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .register-btn:hover {
+            background: #e2e6ea;
+            border-color: #adb5bd;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -127,13 +158,13 @@
     <a href="/forgot_password">Forgot Password?</a>
 </p>
 
-    <p>
-        Register as:
-        <a href="/register/student">Student</a> |
-        <a href="/register/principal">Principal</a> |
-        <a href="/register/warden">Warden</a> |
-        <a href="/register/guardian">Guardian</a>
-    </p>
+    <p style="margin-bottom: 5px;">Register as:</p>
+    <div class="register-buttons">
+        <a href="/register/student" class="register-btn">Student</a>
+        <a href="/register/principal" class="register-btn">Principal</a>
+        <a href="/register/warden" class="register-btn">Warden</a>
+        <a href="/register/guardian" class="register-btn">Guardian</a>
+    </div>
 
 </div>
 

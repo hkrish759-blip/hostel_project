@@ -1,23 +1,108 @@
-<h2>Admin Dashboard</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            background: url("{{ url_for('static', filename='images/image.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            color: #333; 
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+        }
+        .box { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(5px); 
+            padding: 25px; 
+            margin-bottom: 25px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+        }
+        h2, h3 { color: #2c3e50; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
+        th, td { border: 1px solid #e1e4e8; padding: 12px; text-align: left; }
+        th { background: #f8f9fa; font-weight: 600; color: #555; }
+        button { padding: 8px 15px; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .approve { background: #28a745; }
+        .approve:hover { background: #218838; }
+        a { color: #dc3545; text-decoration: none; font-weight: bold; float: right; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
 
-<h3>Pending Principals</h3>
-{% for p in principals %}
-    <p>
-        {{ p.username }} - {{ p.college }}
-        <a href="/admin/approve/{{ p.id }}">Approve</a>
-    </p>
-{% else %}
-    <p>No pending principals</p>
-{% endfor %}
+<div class="container">
+    <div class="box">
+        <a href="/logout">Logout</a>
+        <h2>Admin Dashboard</h2>
+        <p style="font-size: 1.1em;"><strong>Total Registered Colleges:</strong> {{ college_count }}</p>
+    </div>
 
-<h3>Pending Guardians</h3>
-{% for g in guardians %}
-    <p>
-        {{ g.username }}
-        <a href="/admin/approve/{{ g.id }}">Approve</a>
-    </p>
-{% else %}
-    <p>No pending guardians</p>
-{% endfor %}
+    <!-- Pending Approvals -->
+    <div class="box">
+        <h3>⏳ Pending Principal Approvals</h3>
+        {% if principals %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>College</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in principals %}
+                <tr>
+                    <td>{{ p.username }}</td>
+                    <td>{{ p.college }}</td>
+                    <td>
+                        <a href="/admin/approve/{{ p.id }}" style="float:none;">
+                            <button class="approve">Approve</button>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No pending approvals.</p>
+        {% endif %}
+    </div>
 
-<a href="/logout">Logout</a>
+    <!-- Registered Colleges List -->
+    <div class="box">
+        <h3>🏫 Registered Colleges & Principals</h3>
+        {% if approved_principals %}
+        <table>
+            <thead>
+                <tr>
+                    <th>College Name</th>
+                    <th>Principal Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in approved_principals %}
+                <tr>
+                    <td>{{ p.college }}</td>
+                    <td>{{ p.username }}</td>
+                    <td>{{ p.email }}</td>
+                    <td>{{ p.phone }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No colleges registered yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

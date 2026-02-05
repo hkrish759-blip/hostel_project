@@ -3,14 +3,27 @@
 <head>
     <title>Warden Dashboard</title>
     <style>
-        body { font-family: Arial; padding: 20px; background: #f4f6f8; }
-        h2,h3 { color:#333; }
-        .box { background:#fff; padding:15px; margin-bottom:20px; border-radius:6px; box-shadow:0 0 5px #ccc; }
-        table { width:100%; border-collapse: collapse; margin-top:10px; }
-        th, td { border:1px solid #ddd; padding:8px; text-align:left; }
-        button { padding:6px 12px; background:#2196F3; color:#fff; border:none; border-radius:4px; cursor:pointer; }
-        input, select { padding:6px; width:200px; margin:5px 0; }
-        img { width:120px; margin:5px; border-radius:4px; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            background: url("{{ url_for('static', filename='images/image.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            color: #333; 
+        }
+        h2, h3 { color: #2c3e50; }
+        .box { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); padding: 25px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
+        th, td { border: 1px solid #e1e4e8; padding: 12px; text-align: left; }
+        th { background: #f8f9fa; font-weight: 600; color: #555; }
+        button { padding: 10px 18px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        button:hover { background: #0056b3; }
+        input, select { padding: 10px; width: 100%; max-width: 300px; margin: 8px 0; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; }
+        img { width: 120px; height: 120px; object-fit: cover; margin: 5px; border-radius: 4px; border: 1px solid #ddd; }
+        a { color: #dc3545; text-decoration: none; font-weight: bold; float: right; }
+        a:hover { text-decoration: underline; }
+        hr { border: 0; border-top: 1px solid #ddd; margin: 20px 0; }
+        .status-input { width: 100%; padding: 8px; margin: 2px 0; border: 1px solid #ddd; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -27,6 +40,36 @@
         <input type="number" name="total_rooms" placeholder="Total Rooms" required>
         <button type="submit">Add Hostel</button>
     </form>
+</div>
+
+<!-- ================= MANAGE ROOM CONDITIONS ================= -->
+<div class="box">
+    <h3>🛠️ Manage Room Conditions</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Room</th>
+                <th>Capacity</th>
+                <th>Facilities (AC, Fan, etc.)</th>
+                <th>Damage Report</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in rooms %}
+            <tr>
+                <form method="POST" action="/warden/update_room">
+                    <input type="hidden" name="room_id" value="{{ r.id }}">
+                    <td>{{ r.hostel_name }} - {{ r.room_number }}</td>
+                    <td><input type="number" name="capacity" value="{{ r.capacity }}" style="width:60px;"></td>
+                    <td><input type="text" name="facilities" value="{{ r.facilities }}" class="status-input"></td>
+                    <td><input type="text" name="damage" value="{{ r.damage }}" class="status-input"></td>
+                    <td><button type="submit" style="padding:5px 10px; font-size:12px;">Update</button></td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 <!-- ================= TAKE ATTENDANCE ================= -->
