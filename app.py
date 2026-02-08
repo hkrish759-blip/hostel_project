@@ -12,9 +12,14 @@ import google.generativeai as genai
 app = Flask(__name__)
 app.secret_key = "hostel_secret"
 UPLOAD_FOLDER = "static/uploads"
-# ADD THIS NEW CODE BELOW LINE 14:
-genai.configure(api_key="AIzaSyAs1m6zAvO-fpiCtMU6HHhxnraAWW0_n6o") # Replace with your real key
-model = genai.GenerativeModel( 'gemini-3-flash' )
+from dotenv import load_dotenv # Add this at the top with other imports
+load_dotenv() 
+
+# This pulls the key from your .env file automatically
+api_key = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
+
+model = genai.GenerativeModel( 'gemini-3-flash-preview' )
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
