@@ -8,10 +8,21 @@ from werkzeug.utils import secure_filename
 import smtplib
 from email.message import EmailMessage
 import time
+import google.generativeai as genai
 app = Flask(__name__)
 app.secret_key = "hostel_secret"
 UPLOAD_FOLDER = "static/uploads"
+from dotenv import load_dotenv # Add this at the top with other imports
+load_dotenv() 
+
+# This pulls the key from your .env file automatically
+api_key = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
+
+model = genai.GenerativeModel( 'gemini-3-flash-preview' )
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
 
 # database
 def get_db():
@@ -491,6 +502,27 @@ def warden_attendance():
     flash("Attendance marked!")
     return redirect("/warden")
 
+# ---------------- GUARDIAN DASHBOARD ----------------
+@app.route("/guardian")
+def guardian():
+    if session.get("role") != "guardian":
+        return redirect("/")
+
+    db = get_db()
+    
+    # Fetch attendance of students in the same college
+    attendance = db.execute("""
+        SELECT u.username, a.date, a.status 
+        FROM attendance a
+        JOIN users u ON a.student_id = u.id
+        WHERE u.college = ?
+        ORDER BY a.date DESC
+    """, (session["college"],)).fetchall()
+    
+    db.close()
+    return render_template("guardian_dashboard.html", attendance=attendance)
+
+
 # ---------------- Forgot password ----------------
 # ---------------- Forgot password ----------------
 import random
@@ -523,13 +555,28 @@ def forgot_password():
                 error="No account found with this email or mobile number"
             )
 
+        if not user["email"]:
+            db.close()
+            return render_template(
+                "forgot_password.html",
+                error="No email address is linked to this account. Cannot send OTP."
+            )
+
         otp = random.randint(100000, 999999)
 
         session["reset_otp"] = str(otp)
         session["reset_uid"] = user["id"]
         session["otp_time"] = time.time()
 
-        send_otp_email(user["email"], otp)
+        try:
+            send_otp_email(user["email"], otp)
+        except Exception as e:
+            print(f"Email Error: {e}")
+            db.close()
+            return render_template(
+                "forgot_password.html",
+                error="Mail server issue: Failed to send OTP email."
+            )
 
         db.close()
         return render_template("verify_otp.html")
@@ -637,6 +684,26 @@ Do not share it with anyone.
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         server.send_message(msg)
 # ---------------- RUN ----------------
+# ---------------- AI BOT ROUTE ----------------
+@app.route("/chat", methods=["POST"])
+def chat():
+    # Only allow logged-in users to chat
+    if "username" not in session:
+        return {"response": "Please login first!"}, 401
+
+    data = request.json
+    user_message = data.get("message")
+    
+    # System Instruction: Tells the AI its job
+    prompt = f"You are a helpful Hostel Assistant for MNR College. The user is {session.get('username')}. Answer: {user_message}"
+    
+    try:
+        # Gemini 3 Flash is optimized for these agent-first interactions
+        response = model.generate_content(prompt)
+        return {"response": response.text}
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"response": "I'm having trouble thinking right now. Try again later!"}, 500
 if __name__ == "__main__":
     init_db()
     app.run(host="0.0.0.0", port=10000)
